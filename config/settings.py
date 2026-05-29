@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-import urllib.parse
+import sys
 from decouple import config
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,18 +28,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-pm!a_g##2sh2km+qgdib%rjs*3xglpx2+#)(ew#n__q=h2g9x7')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Render 배포 환경에서는 자동으로 DEBUG = False
-DEBUG = 'RENDER' not in os.environ and config('DEBUG', default=True, cast=bool)
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+IS_RENDER = "RENDER" in os.environ
+DEBUG = not (IS_VERCEL or IS_RENDER) and config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,.vercel.app',
-).split(',')
+def _split_env_list(name: str, default: str) -> list[str]:
+    """Vercel may inject empty strings; treat them as unset."""
+    raw = os.environ.get(name, "").strip() or config(name, default=default)
+    return [part.strip() for part in raw.split(",") if part.strip()]
 
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='https://*.vercel.app,http://localhost:8000,http://127.0.0.1:8000',
-).split(',')
+
+ALLOWED_HOSTS = _split_env_list(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,.vercel.app",
+)
+if vercel_url := os.environ.get("VERCEL_URL"):
+    ALLOWED_HOSTS.append(vercel_url.strip())
+
+CSRF_TRUSTED_ORIGINS = _split_env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    (
+        "https://*.vercel.app,"
+        "https://community-wine-iota.vercel.app,"
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000"
+    ),
+)
+if vercel_url:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{vercel_url.strip()}")
 
 
 # Application definition
@@ -104,24 +122,46 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_URL = config('DATABASE_URL', default='')
+def _first_env(*names: str) -> str:
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+# Supabase/Vercel/Render often expose postgres URL under alternate keys
+DATABASE_URL = _first_env(
+    "DATABASE_URL",
+    "POSTGRES_URL",
+    "POSTGRES_PRISMA_URL",
+    "SUPABASE_DB_URL",
+) or config("DATABASE_URL", default="")
 
 if DATABASE_URL:
-    db_url = urllib.parse.urlparse(DATABASE_URL)
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": db_url.path.lstrip("/"),
-            "USER": db_url.username,
-            "PASSWORD": db_url.password,
-            "HOST": db_url.hostname,
-            "PORT": db_url.port or 5432,
-            "CONN_MAX_AGE": 600,
-            "OPTIONS": {
-                "sslmode": config("DB_SSLMODE", default="require"),
-            },
-        }
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
     }
+elif IS_VERCEL or IS_RENDER:
+    # Vercel build runs build.py without DATABASE_URL; use in-memory DB for that step only.
+    _is_vercel_build = any("build.py" in (arg or "") for arg in sys.argv)
+    if _is_vercel_build:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": ":memory:",
+            }
+        }
+    else:
+        raise ImproperlyConfigured(
+            "DATABASE_URL is required on Vercel/Render. "
+            "Connect Supabase (ijzifreevyhgndqasokn) and set DATABASE_URL in environment variables."
+        )
 else:
     DATABASES = {
         "default": {
@@ -129,7 +169,6 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
             "ATOMIC_REQUESTS": True,
             "OPTIONS": {
-                # Busy Timeout: 동시 쓰기 요청 시 타임아웃 (20초)
                 "timeout": 20,
             },
         }

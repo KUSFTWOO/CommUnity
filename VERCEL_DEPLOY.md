@@ -10,9 +10,27 @@
 배포는 완료되었으나, **PostgreSQL(`DATABASE_URL`)이 없어** 런타임에서 SQLite를 열지 못해 **500 오류**가 발생합니다.  
 (Vercel 서버리스는 로컬 `db.sqlite3` 파일을 사용할 수 없습니다.)
 
-## PostgreSQL 연결 (필수)
+## PostgreSQL 연결 (필수) — 500 오류의 직접 원인
 
-### 방법 A: Vercel + Neon (권장)
+Vercel 로그에 `sqlite3.OperationalError: unable to open database file` 가 보이면  
+**`DATABASE_URL`이 없어 SQLite를 쓰려다 실패**한 것입니다. 아래 중 하나로 반드시 연결하세요.
+
+### 방법 A: Supabase (프로젝트 `ijzifreevyhgndqasokn`)
+
+1. [Supabase Dashboard](https://supabase.com/dashboard/project/ijzifreevyhgndqasokn/settings/database) → **Database** → **Connection string**
+2. **URI** 탭, **Transaction pooler** (포트 `6543`) 권장 — 서버리스에 적합
+3. 비밀번호를 넣은 전체 URL 복사
+4. PowerShell:
+
+```powershell
+cd c:\sw\community
+$env:DATABASE_URL = "postgresql://postgres.ijzifreevyhgndqasokn:YOUR_PASSWORD@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres"
+.\scripts\set-vercel-database.ps1
+```
+
+또는 Vercel 대시보드 → Project **community** → Settings → Environment Variables → `DATABASE_URL` 추가 후 **Redeploy**.
+
+### 방법 B: Vercel + Neon
 
 1. 브라우저에서 약관 동의:  
    https://vercel.com/twoo00-5507s-projects/~/integrations/accept-terms/neon?source=cli
