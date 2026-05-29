@@ -38,10 +38,11 @@ def _split_env_list(name: str, default: str) -> list[str]:
     return [part.strip() for part in raw.split(",") if part.strip()]
 
 
-ALLOWED_HOSTS = _split_env_list(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.vercel.app,.onrender.com",
-)
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'community-web-9yzv.onrender.com', 
+]
 if vercel_url := os.environ.get("VERCEL_URL"):
     ALLOWED_HOSTS.append(vercel_url.strip())
 
