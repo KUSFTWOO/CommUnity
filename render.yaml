@@ -26,8 +26,8 @@ services:
       - key: DB_SSLMODE
         value: "require"
 
+databases:
   # PostgreSQL 데이터베이스 정의
-  - type: pserv
-    name: community-db
+  - name: community-db
     plan: free
     region: ohio
