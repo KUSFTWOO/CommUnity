@@ -40,7 +40,7 @@ def _split_env_list(name: str, default: str) -> list[str]:
 
 ALLOWED_HOSTS = _split_env_list(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.vercel.app",
+    "localhost,127.0.0.1,.vercel.app,.onrender.com",
 )
 if vercel_url := os.environ.get("VERCEL_URL"):
     ALLOWED_HOSTS.append(vercel_url.strip())
@@ -50,6 +50,7 @@ CSRF_TRUSTED_ORIGINS = _split_env_list(
     (
         "https://*.vercel.app,"
         "https://community-wine-iota.vercel.app,"
+        "https://*.onrender.com,"
         "http://localhost:8000,"
         "http://127.0.0.1:8000"
     ),
