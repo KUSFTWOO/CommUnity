@@ -1,0 +1,63 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>일정 상세</h1>
+    <a href="{% url 'dashboard:calendar_manage' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 일정 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">{{ event.title }}</h2>
+    <table style="width: 100%; margin-bottom: 20px;">
+        <tr>
+            <td style="padding: 10px; font-weight: 600; width: 150px;">기간</td>
+            <td style="padding: 10px;">{{ event.duration_display }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">장소</td>
+            <td style="padding: 10px;">{{ event.location|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">작성자</td>
+            <td style="padding: 10px;">{{ event.created_by.nickname }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">작성일</td>
+            <td style="padding: 10px;">{{ event.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+    </table>
+
+    {% if event.description %}
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; white-space: pre-wrap; line-height: 1.6;">
+{{ event.description }}
+    </div>
+    {% endif %}
+
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" name="action" value="delete" class="btn btn-danger" style="padding: 8px 16px;" onclick="return confirm('정말로 이 일정을 삭제하시겠습니까?');">
+            일정 삭제
+        </button>
+    </form>
+</div>
+
+<!-- 편집 폼 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0;">일정 수정</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">제목</label>
+            <input type="text" name="title" value="{{ event.title }}" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 5px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">설명</label>
+            <textarea name="description" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 5px; min-height: 150px;">{{ event.description }}</textarea>
+        </div>
+        <button type="submit" name="action" value="edit" class="btn btn-primary" style="padding: 8px 16px;">
+            수정 완료
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}프로필 - CommUnity{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-12">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">내 프로필</h1>
+        <p class="text-gray-500">내 정보를 확인하고 관리하세요</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-lg border border-gray-200 shadow-md p-8">
+        <!-- Profile Image -->
+        <div class="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
+            <div class="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="{{ user.nickname }}" class="w-full h-full object-cover">
+                {% else %}
+                    <span class="text-4xl">👤</span>
+                {% endif %}
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">{{ user.nickname }}</h2>
+                <p class="text-gray-500">{{ user.email }}</p>
+                {% if user.is_staff %}
+                    <span class="inline-block mt-2 px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
+                        🛠️ 관리자
+                    </span>
+                {% else %}
+                    <span class="inline-block mt-2 px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                        👤 일반 회원
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="space-y-4 mb-8">
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 mb-1">이메일</h3>
+                <p class="text-gray-900">{{ user.email }}</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 mb-1">닉네임</h3>
+                <p class="text-gray-900">{{ user.nickname }}</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 mb-1">한 줄 소개</h3>
+                <p class="text-gray-900">
+                    {% if user.bio %}
+                        {{ user.bio }}
+                    {% else %}
+                        <span class="text-gray-500">등록되지 않았습니다</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 mb-1">가입일</h3>
+                <p class="text-gray-900">{{ user.date_joined|date:"Y년 m월 d일" }}</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 rounded-lg">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">{{ post_count }}</div>
+                <p class="text-sm text-gray-600">게시글</p>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">{{ total_views }}</div>
+                <p class="text-sm text-gray-600">조회수</p>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">{{ total_comments }}</div>
+                <p class="text-sm text-gray-600">댓글</p>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">{{ total_likes }}</div>
+                <p class="text-sm text-gray-600">좋아요</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4">
+            <a href="{% url 'accounts:profile_edit' %}" class="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition-colors text-center">
+                프로필 수정
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="flex-1 border border-gray-300 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                로그아웃
+            </a>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="mt-8 p-4 bg-red-50 rounded-lg border border-red-200">
+        <h3 class="text-sm font-medium text-red-900 mb-3">위험 영역</h3>
+        <button class="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            계정 삭제
+        </button>
+        <p class="text-xs text-red-700 mt-2">주의: 이 작업은 되돌릴 수 없습니다.</p>
+    </div>
+</div>
+{% endblock %}

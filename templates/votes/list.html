@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}투표 — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 페이지 헤더 -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">🗳️ 투표</h1>
+            <p class="mt-2 text-sm text-gray-500">커뮤니티의 소식을 공유하세요</p>
+        </div>
+        {% if user.is_authenticated and user.is_staff %}
+            <a href="{% url 'votes:create' %}"
+               class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700">
+                ➕ 투표 생성
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- 진행중인 투표 섹션 -->
+    {% if active_polls %}
+        <div class="mb-12">
+            <h2 class="mb-4 text-xl font-bold text-gray-900">진행중인 투표 ({{ active_polls|length }})</h2>
+            <div class="grid gap-4">
+                {% for poll in active_polls %}
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <a href="{% url 'votes:detail' poll.pk %}"
+                                   class="text-lg font-bold text-indigo-600 hover:text-indigo-700">
+                                    {{ poll.question }}
+                                </a>
+                                <div class="mt-3 flex items-center gap-4 text-sm text-gray-500">
+                                    <span>👤 {{ poll.total_votes }}명 참여</span>
+                                    <span>📅 {{ poll.expires_at|date:"m월 d일 H:i" }} 마감</span>
+                                </div>
+                                {% if user.is_authenticated and user.pk in user_votes %}
+                                    {% if poll.pk in user_votes %}
+                                        <div class="mt-2 inline-block rounded-full bg-emerald-50 px-3 py-1 text-sm text-emerald-700">
+                                            ✓ 투표 완료
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if user.is_authenticated and user.is_staff %}
+                                <div class="flex gap-2">
+                                    <a href="{% url 'votes:edit' poll.pk %}"
+                                       class="rounded-lg border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+                                        수정
+                                    </a>
+                                    <a href="{% url 'votes:delete' poll.pk %}"
+                                       class="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-700 transition-colors hover:bg-red-50">
+                                        삭제
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 마감된 투표 섹션 -->
+    {% if closed_polls %}
+        <div class="mb-12">
+            <h2 class="mb-4 text-xl font-bold text-gray-900">마감된 투표 ({{ closed_polls|length }})</h2>
+            <div class="grid gap-4">
+                {% for poll in closed_polls %}
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 hover:shadow-lg transition-shadow opacity-75">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <a href="{% url 'votes:detail' poll.pk %}"
+                                   class="text-lg font-bold text-gray-600 hover:text-gray-700">
+                                    {{ poll.question }}
+                                </a>
+                                <div class="mt-3 flex items-center gap-4 text-sm text-gray-500">
+                                    <span>👤 {{ poll.total_votes }}명 참여</span>
+                                    <span class="inline-block rounded-full bg-gray-100 px-2 py-1">마감됨</span>
+                                </div>
+                            </div>
+                            {% if user.is_authenticated and user.is_staff %}
+                                <div class="flex gap-2">
+                                    <a href="{% url 'votes:delete' poll.pk %}"
+                                       class="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-700 transition-colors hover:bg-red-50">
+                                        삭제
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 투표 없음 -->
+    {% if not active_polls and not closed_polls %}
+        <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 py-12 text-center">
+            <p class="text-lg text-gray-500">아직 진행중인 투표가 없습니다.</p>
+            {% if user.is_authenticated and user.is_staff %}
+                <a href="{% url 'votes:create' %}"
+                   class="mt-4 inline-block rounded-lg bg-indigo-600 px-6 py-2 font-medium text-white transition-colors hover:bg-indigo-700">
+                    첫 투표 만들기
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

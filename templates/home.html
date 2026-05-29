@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}홈 - CommUnity{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+    <!-- Hero Section -->
+    <div class="text-center py-16">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            CommUnity에 오신 것을 환영합니다 👋
+        </h1>
+        <p class="text-xl text-gray-500 mb-8">
+            소규모 커뮤니티의 모든 것을 한곳에서 관리하세요
+        </p>
+        {% if not user.is_authenticated %}
+            <div class="flex gap-4 justify-center">
+                <a href="{% url 'accounts:login' %}"
+                   class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                    로그인
+                </a>
+                <a href="{% url 'accounts:signup' %}"
+                   class="border-2 border-indigo-600 text-indigo-600 px-6 py-3 rounded-lg hover:bg-indigo-50 transition-colors font-medium">
+                    가입하기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Features -->
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <!-- 공지사항 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">📢</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">공지사항</h3>
+            <p class="text-gray-500 mb-4">
+                커뮤니티의 중요한 소식을 공지하고 핀 고정으로 항상 보이게 하세요.
+            </p>
+            <a href="{% url 'notices:list' %}"
+               class="text-indigo-600 font-medium hover:text-indigo-700">
+                공지사항 보기 →
+            </a>
+        </div>
+
+        <!-- 게시판 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">💬</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">자유게시판</h3>
+            <p class="text-gray-500 mb-4">
+                멤버들과 자유롭게 소통하고, 댓글과 좋아요로 상호작용하세요.
+            </p>
+            <a href="{% url 'board:list' %}"
+               class="text-indigo-600 font-medium hover:text-indigo-700">
+                게시판 보기 →
+            </a>
+        </div>
+
+        <!-- 캘린더 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">📅</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">캘린더</h3>
+            <p class="text-gray-500 mb-4">
+                커뮤니티의 주요 일정을 한눈에 확인하고 계획을 세우세요.
+            </p>
+            <a href="{% url 'calendar:list' %}"
+               class="text-indigo-600 font-medium hover:text-indigo-700">
+                캘린더 보기 →
+            </a>
+        </div>
+
+        <!-- 투표 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">🗳️</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">투표</h3>
+            <p class="text-gray-500 mb-4">
+                커뮤니티의 의견을 모으고 민주적인 의사결정을 진행하세요.
+            </p>
+            <a href="{% url 'votes:list' %}"
+               class="text-indigo-600 font-medium hover:text-indigo-700">
+                투표 보기 →
+            </a>
+        </div>
+
+        <!-- 회원 관리 -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">👥</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">회원 시스템</h3>
+            <p class="text-gray-500 mb-4">
+                쉽고 안전한 회원가입과 로그인으로 커뮤니티에 참여하세요.
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}"
+                   class="text-indigo-600 font-medium hover:text-indigo-700">
+                    내 프로필 →
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:signup' %}"
+                   class="text-indigo-600 font-medium hover:text-indigo-700">
+                    회원가입 →
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- 관리자 대시보드 -->
+        {% if user.is_staff %}
+        <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">🛠️</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">관리자 대시보드</h3>
+            <p class="text-gray-500 mb-4">
+                커뮤니티의 운영 현황을 파악하고 관리자 업무를 수행하세요.
+            </p>
+            <a href="{% url 'dashboard:index' %}"
+               class="text-indigo-600 font-medium hover:text-indigo-700">
+                대시보드 →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Stats (로그인한 경우만) -->
+    {% if user.is_authenticated %}
+    <div class="bg-indigo-50 rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">커뮤니티 현황</h2>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">0</div>
+                <p class="text-gray-600">공지사항</p>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">0</div>
+                <p class="text-gray-600">게시글</p>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">0</div>
+                <p class="text-gray-600">일정</p>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">0</div>
+                <p class="text-gray-600">투표</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

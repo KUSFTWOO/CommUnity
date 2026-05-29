@@ -1,0 +1,65 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>게시글 상세</h1>
+    <a href="{% url 'dashboard:posts' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 게시글 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">{{ post.title }}</h2>
+    <div style="color: #6c757d; margin-bottom: 15px; font-size: 14px;">
+        <span>작성자: <strong>{{ post.author.nickname }}</strong></span> |
+        <span>작성일: {{ post.created_at|date:"Y-m-d H:i" }}</span> |
+        <span>조회수: <strong>{{ post.views }}</strong></span> |
+        <span>좋아요: <strong>{{ post.like_count }}</strong></span>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; white-space: pre-wrap; line-height: 1.6;">
+{{ post.content }}
+    </div>
+
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" name="action" value="delete" class="btn btn-danger" style="padding: 8px 16px;" onclick="return confirm('정말로 이 게시글을 삭제하시겠습니까?');">
+            게시글 삭제
+        </button>
+    </form>
+</div>
+
+<!-- 댓글 목록 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0;">댓글 ({{ comments.count }}개)</h2>
+
+    {% if comments %}
+        {% for comment in comments %}
+        <div style="background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 5px;">
+                        {{ comment.author.nickname }}
+                        {% if comment.is_reply %}
+                            <span style="color: #6c757d; font-size: 12px;">(답글)</span>
+                        {% endif %}
+                    </div>
+                    <div style="color: #6c757d; font-size: 13px; margin-bottom: 8px;">
+                        {{ comment.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                    <div style="margin-bottom: 10px;">{{ comment.content }}</div>
+                </div>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                    <button type="submit" name="action" value="delete_comment" class="btn btn-danger" style="padding: 4px 12px; font-size: 12px;" onclick="return confirm('정말로 이 댓글을 삭제하시겠습니까?');">
+                        삭제
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: #6c757d; text-align: center; padding: 30px 0;">댓글이 없습니다.</p>
+    {% endif %}
+</div>
+{% endblock %}

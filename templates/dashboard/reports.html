@@ -1,0 +1,29 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>신고 처리</h1>
+</div>
+
+<!-- 안내 메시지 -->
+<div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; text-align: center;">
+    <h2 style="margin-top: 0; color: #0066cc;">곧 제공될 기능입니다</h2>
+    <p style="color: #0066cc; margin: 0;">
+        신고 시스템은 현재 개발 중입니다. <br>
+        사용자 신고 기능이 활성화되면 여기서 신고된 게시글과 댓글을 관리할 수 있습니다.
+    </p>
+</div>
+
+<!-- 신고 처리 정보 (미리보기) -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-top: 30px;">
+    <h2 style="margin-top: 0;">신고 기능 안내</h2>
+    <p>신고 시스템이 활성화되면 다음과 같은 기능을 사용할 수 있습니다:</p>
+    <ul>
+        <li>부적절한 게시글 신고</li>
+        <li>부적절한 댓글 신고</li>
+        <li>신고 내역 조회</li>
+        <li>신고된 게시글/댓글 관리</li>
+        <li>신고 처리 상태 관리</li>
+    </ul>
+</div>
+{% endblock %}

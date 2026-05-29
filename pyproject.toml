@@ -1,0 +1,21 @@
+[project]
+name = "community"
+version = "1.0.0"
+description = "CommUnity community web platform"
+requires-python = ">=3.11"
+dependencies = [
+    "Django==5.2.4",
+    "Pillow==10.2.0",
+    "python-decouple==3.8",
+    "django-crispy-forms==2.3",
+    "crispy-tailwind==1.0.0",
+    "django-htmx==1.19.0",
+    "whitenoise==6.9.0",
+    "psycopg2-binary==2.9.10",
+]
+
+[tool.vercel]
+entrypoint = "config.wsgi:application"
+
+[tool.vercel.scripts]
+build = "python build.py"

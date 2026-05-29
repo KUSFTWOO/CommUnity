@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{% if survey %}설문 수정{% else %}설문 생성{% endif %} — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'surveys:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 설문 목록으로
+    </a>
+
+    <!-- 폼 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 max-w-2xl">
+        <h1 class="mb-6 text-2xl font-bold text-gray-900">
+            {% if survey %}설문 수정{% else %}새 설문 생성{% endif %}
+        </h1>
+
+        <form method="post" class="space-y-8" id="survey-form">
+            {% csrf_token %}
+
+            <!-- 기본 정보 섹션 -->
+            <div class="border-b border-gray-200 pb-8">
+                <h2 class="mb-4 text-lg font-bold text-gray-900">기본 정보</h2>
+
+                <!-- 제목 -->
+                <div class="mb-6">
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        {{ form.title.label }}
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.title.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 설명 -->
+                <div class="mb-6">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        {{ form.description.label }}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 익명 응답 -->
+                <div class="mb-6 flex items-center gap-3">
+                    {{ form.is_anonymous }}
+                    <label for="{{ form.is_anonymous.id_for_label }}" class="text-sm font-medium text-gray-900">
+                        {{ form.is_anonymous.label }}
+                    </label>
+                </div>
+
+                <!-- 마감일시 -->
+                <div>
+                    <label for="{{ form.expires_at.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        {{ form.expires_at.label }}
+                    </label>
+                    {{ form.expires_at }}
+                    {% if form.expires_at.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.expires_at.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 질문 섹션 -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-900">질문 (최소 1개)</h2>
+                    <button type="button"
+                            onclick="addQuestion()"
+                            class="rounded-lg bg-indigo-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-indigo-700">
+                        + 질문 추가
+                    </button>
+                </div>
+
+                <div id="questions-container" class="space-y-6">
+                    <!-- 동적으로 질문이 추가됨 -->
+                </div>
+            </div>
+
+            <!-- 비폼 에러 -->
+            {% if form.non_field_errors %}
+                <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- 버튼 -->
+            <div class="flex gap-2 pt-4">
+                <button type="submit"
+                        class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition-colors hover:bg-indigo-700">
+                    {% if survey %}수정하기{% else %}생성하기{% endif %}
+                </button>
+                <a href="{% url 'surveys:list' %}"
+                   class="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-700 text-center transition-colors hover:bg-gray-50">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let questionIndex = 0;
+
+function addQuestion() {
+    const container = document.getElementById('questions-container');
+    const html = `
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 question-item">
+            <div class="flex items-start justify-between mb-4">
+                <h3 class="font-medium text-gray-900">질문 #<span class="question-number">${questionIndex + 1}</span></h3>
+                <button type="button" onclick="removeQuestion(this)" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                    삭제
+                </button>
+            </div>
+
+            <!-- 질문 텍스트 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-900 mb-2">질문 내용 *</label>
+                <input type="text"
+                       name="question_${questionIndex}_text"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       placeholder="질문을 입력하세요"
+                       required>
+            </div>
+
+            <!-- 질문 타입 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-900 mb-2">질문 타입 *</label>
+                <select name="question_${questionIndex}_type"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 question-type"
+                        onchange="updateOptionsVisibility(this)"
+                        required>
+                    <option value="">선택하세요</option>
+                    <option value="TEXT">주관식 (짧은 답변)</option>
+                    <option value="TEXTAREA">주관식 (긴 답변)</option>
+                    <option value="CHOICE">객관식 (단일선택)</option>
+                    <option value="MULTIPLE">객관식 (복수선택)</option>
+                    <option value="SCALE">척도 (1-5)</option>
+                </select>
+            </div>
+
+            <!-- 선택지 -->
+            <div class="mb-4 options-section" style="display: none;">
+                <label class="block text-sm font-medium text-gray-900 mb-2">선택지 (줄바꿈으로 구분) *</label>
+                <textarea name="question_${questionIndex}_options"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          rows="4"
+                          placeholder="선택지1
+선택지2
+선택지3"></textarea>
+            </div>
+
+            <!-- 필수 여부 -->
+            <div class="flex items-center gap-3">
+                <input type="checkbox"
+                       name="question_${questionIndex}_required"
+                       id="question_${questionIndex}_required"
+                       class="h-4 w-4 text-indigo-600"
+                       checked>
+                <label for="question_${questionIndex}_required" class="text-sm font-medium text-gray-900">
+                    필수 질문
+                </label>
+            </div>
+        </div>
+    `;
+
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    container.appendChild(div.firstElementChild);
+    updateQuestionNumbers();
+    questionIndex++;
+}
+
+function removeQuestion(button) {
+    button.closest('.question-item').remove();
+    updateQuestionNumbers();
+}
+
+function updateQuestionNumbers() {
+    const items = document.querySelectorAll('.question-item');
+    items.forEach((item, index) => {
+        item.querySelector('.question-number').textContent = index + 1;
+    });
+}
+
+function updateOptionsVisibility(select) {
+    const item = select.closest('.question-item');
+    const optionsSection = item.querySelector('.options-section');
+    const optionsInput = item.querySelector('[name*="_options"]');
+    const type = select.value;
+
+    if (type === 'CHOICE' || type === 'MULTIPLE') {
+        optionsSection.style.display = 'block';
+        optionsInput.required = true;
+    } else {
+        optionsSection.style.display = 'none';
+        optionsInput.required = false;
+    }
+}
+
+// 폼 제출 시 question_count 추가
+document.getElementById('survey-form').addEventListener('submit', function(e) {
+    const count = document.querySelectorAll('.question-item').length;
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'question_count';
+    input.value = count;
+    this.appendChild(input);
+});
+
+// 초기 질문 1개 추가
+document.addEventListener('DOMContentLoaded', function() {
+    addQuestion();
+});
+</script>
+{% endblock %}

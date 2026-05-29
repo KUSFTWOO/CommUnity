@@ -1,0 +1,86 @@
+<!-- Navigation Bar -->
+<nav class="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+    <div class="mx-auto max-w-6xl px-4 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-8">
+                <a href="{% url 'home' %}" class="flex items-center gap-2">
+                    <span class="text-2xl font-bold text-indigo-600">CommUnity</span>
+                </a>
+
+                <!-- Nav Links (데스크톱) -->
+                <div class="hidden gap-6 md:flex">
+                    <a href="{% url 'notices:list' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        📢 공지사항
+                    </a>
+                    <a href="{% url 'board:list' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        💬 게시판
+                    </a>
+                    <a href="{% url 'calendar:list' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        📅 캘린더
+                    </a>
+                    <a href="{% url 'votes:list' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        🗳️ 투표
+                    </a>
+                    <a href="{% url 'surveys:list' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        📋 설문
+                    </a>
+                    <a href="{% url 'search:search' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                        🔍 검색
+                    </a>
+                </div>
+            </div>
+
+            <!-- Auth Links -->
+            <div class="flex items-center gap-4">
+                {% if user.is_authenticated %}
+                    <!-- 로그인 상태 -->
+                    <div class="flex items-center gap-4">
+                        {% if user.is_staff %}
+                            <a href="{% url 'dashboard:index' %}"
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                                🛠️ 관리자
+                            </a>
+                        {% endif %}
+
+                        <!-- 사용자 드롭다운 -->
+                        <div class="relative group">
+                            <button class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors">
+                                <span class="text-sm font-medium text-gray-700">{{ user.nickname }}</span>
+                                <span class="text-gray-400">▼</span>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div class="absolute right-0 hidden w-40 rounded-lg border border-gray-200 bg-white shadow-lg group-hover:block">
+                                <a href="{% url 'accounts:profile' %}"
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    👤 내 프로필
+                                </a>
+                                <a href="{% url 'accounts:logout' %}"
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-200">
+                                    🚪 로그아웃
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- 비로그인 상태 -->
+                    <a href="{% url 'accounts:login' %}"
+                       class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                        로그인
+                    </a>
+                    <a href="{% url 'accounts:signup' %}"
+                       class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
+                        가입
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

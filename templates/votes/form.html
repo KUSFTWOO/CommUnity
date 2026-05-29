@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{% if poll %}투표 수정{% else %}투표 생성{% endif %} — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'votes:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 투표 목록으로
+    </a>
+
+    <!-- 폼 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 max-w-2xl">
+        <h1 class="mb-6 text-2xl font-bold text-gray-900">
+            {% if poll %}투표 수정{% else %}새 투표 생성{% endif %}
+        </h1>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 질문 -->
+            <div>
+                <label for="{{ form.question.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                    {{ form.question.label }}
+                </label>
+                {{ form.question }}
+                {% if form.question.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.question.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 마감일시 -->
+            <div>
+                <label for="{{ form.expires_at.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                    {{ form.expires_at.label }}
+                </label>
+                {{ form.expires_at }}
+                {% if form.expires_at.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.expires_at.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 선택지 -->
+            <div>
+                <label for="{{ form.options.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                    선택지 (각 선택지를 줄바꿈으로 구분)
+                </label>
+                {{ form.options }}
+                <p class="mt-2 text-xs text-gray-500">
+                    최소 2개, 최대 10개 선택지. 각 선택지는 2자 이상 200자 이하.
+                </p>
+                {% if form.options.errors %}
+                    <div class="mt-2 space-y-1 text-sm text-red-600">
+                        {% for error in form.options.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 비폼 에러 -->
+            {% if form.non_field_errors %}
+                <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- 버튼 -->
+            <div class="flex gap-2">
+                <button type="submit"
+                        class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition-colors hover:bg-indigo-700">
+                    {% if poll %}수정하기{% else %}생성하기{% endif %}
+                </button>
+                <a href="{% url 'votes:list' %}"
+                   class="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-700 text-center transition-colors hover:bg-gray-50">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

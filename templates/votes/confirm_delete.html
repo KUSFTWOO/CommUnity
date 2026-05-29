@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}투표 삭제 — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'votes:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 투표 목록으로
+    </a>
+
+    <!-- 삭제 확인 -->
+    <div class="rounded-xl border border-red-200 bg-red-50 p-8 max-w-2xl">
+        <h1 class="mb-4 text-2xl font-bold text-red-900">투표를 삭제하시겠습니까?</h1>
+
+        <div class="mb-6 rounded-lg bg-white border border-red-200 p-4">
+            <p class="text-lg font-medium text-gray-900">{{ poll.question }}</p>
+            <p class="mt-2 text-sm text-gray-600">
+                현재 {{ poll.total_votes }}명이 투표했습니다.
+            </p>
+        </div>
+
+        <p class="mb-6 text-red-800">
+            ⚠️ 이 작업은 되돌릴 수 없습니다. 투표와 모든 투표 데이터가 영구 삭제됩니다.
+        </p>
+
+        <form method="post" class="flex gap-2">
+            {% csrf_token %}
+            <button type="submit"
+                    class="flex-1 rounded-lg bg-red-600 px-4 py-3 font-medium text-white transition-colors hover:bg-red-700">
+                삭제하기
+            </button>
+            <a href="{% url 'votes:detail' poll.pk %}"
+               class="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-700 text-center transition-colors hover:bg-gray-50">
+                취소
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

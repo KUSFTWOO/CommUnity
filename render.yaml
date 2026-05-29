@@ -1,0 +1,45 @@
+services:
+  # 웹 서비스 정의
+  - type: web
+    name: community-web
+    runtime: python
+    pythonVersion: 3.11
+
+    # 빌드 명령어
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+
+    # 시작 명령어
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+
+    # 환경 변수
+    envVars:
+      - key: RENDER
+        value: true
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        value: django-insecure-9z!@bn#xz_9v-&c3$*b6d%^j*l+0f^v@!_6c^+3zx!k^%@8d9
+      - key: DATABASE_URL
+        fromDatabase:
+          name: community-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: "{{ env.RENDER_SERVICE_NAME }}.onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://{{ env.RENDER_SERVICE_NAME }}.onrender.com"
+      - key: DB_SSLMODE
+        value: require
+
+  # PostgreSQL 데이터베이스 정의
+  - type: pserv
+    name: community-db
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all
+    plan: free
+    region: ohio
+    databaseName: community
+    user: community_user

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ survey.title }} 응답 — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'surveys:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 설문 목록으로
+    </a>
+
+    <!-- 설문 카드 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 mb-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">{{ survey.title }}</h1>
+            {% if survey.description %}
+                <p class="mt-2 text-gray-600">{{ survey.description }}</p>
+            {% endif %}
+            <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                <span>작성자: {{ survey.created_by.nickname }}</span>
+                <span>{{ survey.created_at|date:"Y-m-d H:i" }}</span>
+                {% if is_expired %}
+                    <span class="inline-block rounded-full bg-red-100 px-2 py-1 text-red-700">마감됨</span>
+                {% else %}
+                    <span class="inline-block rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">진행중</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 설문 상태 메시지 -->
+        {% if is_expired %}
+            <div class="mb-6 rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm text-gray-600">
+                이 설문은 마감되었습니다. 결과만 확인할 수 있습니다.
+            </div>
+        {% elif not user.is_authenticated %}
+            <div class="mb-6 rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-700">
+                <a href="{% url 'accounts:login' %}" class="font-medium underline hover:no-underline">
+                    로그인
+                </a>하면 설문에 응답할 수 있습니다.
+            </div>
+        {% elif user_response %}
+            <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-700">
+                ✓ 이미 응답하셨습니다 ({{ user_response.submitted_at|date:"Y-m-d H:i" }})
+                <a href="{% url 'surveys:response_detail' survey.pk user_response.pk %}" class="ml-2 font-medium underline hover:no-underline">
+                    내 응답 보기
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- 설문 질문 폼 -->
+        {% if not is_expired and user.is_authenticated %}
+            <form method="post" id="survey-form" class="space-y-8">
+                {% csrf_token %}
+
+                {% for question in questions %}
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                        <div class="flex items-start gap-2 mb-4">
+                            <label class="font-medium text-gray-900 flex-1">
+                                {{ question.text }}
+                                {% if question.required %}
+                                    <span class="text-red-600">*</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                        {% if question.question_type == 'TEXT' %}
+                            <input type="text"
+                                   name="question_{{ question.id }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                   {% if question.required %}required{% endif %}>
+
+                        {% elif question.question_type == 'TEXTAREA' %}
+                            <textarea name="question_{{ question.id }}"
+                                      rows="4"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                      {% if question.required %}required{% endif %}></textarea>
+
+                        {% elif question.question_type == 'CHOICE' %}
+                            <div class="space-y-2">
+                                {% for option in question.parsed_options %}
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="radio"
+                                               name="question_{{ question.id }}"
+                                               value="{{ option }}"
+                                               class="h-4 w-4 text-indigo-600"
+                                               {% if question.required %}required{% endif %}>
+                                        <span class="text-gray-700">{{ option }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                        {% elif question.question_type == 'MULTIPLE' %}
+                            <div class="space-y-2">
+                                {% for option in question.parsed_options %}
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox"
+                                               name="question_{{ question.id }}"
+                                               value="{{ option }}"
+                                               class="h-4 w-4 text-indigo-600 rounded">
+                                        <span class="text-gray-700">{{ option }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                        {% elif question.question_type == 'SCALE' %}
+                            <div class="flex gap-3 items-center">
+                                {% for i in "12345" %}
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio"
+                                               name="question_{{ question.id }}"
+                                               value="{{ i }}"
+                                               class="h-4 w-4 text-indigo-600"
+                                               {% if question.required %}required{% endif %}>
+                                        <span class="text-gray-700 text-sm">{{ i }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-2">
+                                <span>매우 부정</span>
+                                <span>매우 긍정</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <!-- 제출 버튼 -->
+                <div class="flex gap-2 pt-4">
+                    <button type="submit"
+                            class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition-colors hover:bg-indigo-700">
+                        제출
+                    </button>
+                    <a href="{% url 'surveys:list' %}"
+                       class="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-700 text-center transition-colors hover:bg-gray-50">
+                        취소
+                    </a>
+                </div>
+            </form>
+        {% else %}
+            <div class="rounded-lg bg-gray-50 p-6 text-center">
+                <p class="text-gray-600">설문 응답 기간이 종료되었습니다.</p>
+                <a href="{% url 'surveys:results' survey.pk %}"
+                   class="mt-4 inline-block rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-100">
+                    결과 보기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

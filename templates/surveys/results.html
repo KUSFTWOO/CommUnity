@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ survey.title }} 결과 — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'surveys:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 설문 목록으로
+    </a>
+
+    <!-- 설문 카드 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 mb-8">
+        <div class="flex items-start justify-between mb-6">
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-gray-900">{{ survey.title }}</h1>
+                {% if survey.description %}
+                    <p class="mt-2 text-gray-600">{{ survey.description }}</p>
+                {% endif %}
+                <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                    <span>작성자: {{ survey.created_by.nickname }}</span>
+                    <span>{{ survey.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 응답 통계 -->
+        <div class="mb-8 rounded-lg bg-indigo-50 border border-indigo-200 p-4">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">{{ total_responses }}</div>
+                <div class="text-sm text-indigo-700 mt-1">명이 응답했습니다</div>
+            </div>
+        </div>
+
+        <!-- 질문별 결과 -->
+        <div class="space-y-8">
+            {% for result in question_results %}
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                    <h2 class="mb-4 font-bold text-gray-900">
+                        Q{{ forloop.counter }}. {{ result.question.text }}
+                        <span class="text-xs font-normal text-gray-500">
+                            ({{ result.question.get_question_type_display }})
+                        </span>
+                    </h2>
+
+                    <!-- 객관식 (단일/복수 선택) -->
+                    {% if result.type == 'CHOICE' or result.type == 'MULTIPLE' %}
+                        <div class="space-y-4">
+                            {% for option_data in result.data %}
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-medium text-gray-900">{{ option_data.option }}</span>
+                                        <div class="text-right">
+                                            <div class="text-lg font-bold text-gray-900">{{ option_data.count }}</div>
+                                            <div class="text-sm text-gray-600">{{ option_data.percentage }}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                        <div class="bg-indigo-600 h-full transition-all duration-300" style="width: {{ option_data.percentage }}%"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    <!-- 척도 -->
+                    {% elif result.type == 'SCALE' %}
+                        <div class="rounded-lg bg-white p-4 border border-gray-200">
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-indigo-600">{{ result.average }}</div>
+                                <div class="text-sm text-gray-600 mt-1">{{ result.total }}명 응답 (평균 5점 만점)</div>
+                            </div>
+                        </div>
+
+                    <!-- 주관식 -->
+                    {% elif result.type == 'TEXT' or result.type == 'TEXTAREA' %}
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            {% if result.answers %}
+                                {% for answer in result.answers %}
+                                    <div class="rounded-lg bg-white border border-gray-200 p-4 text-sm text-gray-700">
+                                        {{ answer|truncatewords:50 }}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="rounded-lg bg-white border border-gray-200 p-4 text-sm text-gray-500">
+                                    응답이 없습니다.
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4 text-xs text-gray-500">
+                        총 {{ result.total }}명 응답
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 관리자 버튼 -->
+        {% if user.is_staff %}
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <a href="{% url 'surveys:delete' survey.pk %}"
+                   class="inline-block rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50">
+                    설문 삭제
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

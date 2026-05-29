@@ -1,0 +1,45 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>투표 관리</h1>
+</div>
+
+<!-- 투표 목록 -->
+<div class="table-wrapper">
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">질문</th>
+                <th style="width: 15%;">작성자</th>
+                <th style="width: 15%;">마감일</th>
+                <th style="width: 10%;">투표수</th>
+                <th style="width: 10%;">상태</th>
+                <th style="width: 100px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for poll in polls %}
+            <tr>
+                <td><a href="{% url 'dashboard:poll_detail' poll.id %}">{{ poll.question|truncatewords:10 }}</a></td>
+                <td>{{ poll.created_by.nickname }}</td>
+                <td>{{ poll.expires_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ poll.total_votes }}</td>
+                <td>
+                    {% if poll.is_expired %}
+                        <span class="badge badge-danger">마감</span>
+                    {% else %}
+                        <span class="badge badge-success">진행중</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'dashboard:poll_detail' poll.id %}" class="btn btn-sm" style="padding: 4px 8px; font-size: 12px; background: #0066cc; color: white; text-decoration: none; border-radius: 3px;">상세</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #6c757d; padding: 30px;">투표가 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

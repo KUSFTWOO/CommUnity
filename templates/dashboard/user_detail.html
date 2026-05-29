@@ -1,0 +1,111 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>{{ user.nickname }} - 회원 상세</h1>
+    <a href="{% url 'dashboard:users' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 회원 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">기본 정보</h2>
+    <table style="width: 100%;">
+        <tr>
+            <td style="padding: 10px; font-weight: 600; width: 150px;">닉네임</td>
+            <td style="padding: 10px;">{{ user.nickname }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">이메일</td>
+            <td style="padding: 10px;">{{ user.email }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">이름</td>
+            <td style="padding: 10px;">{{ user.first_name }} {{ user.last_name }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">소개</td>
+            <td style="padding: 10px;">{{ user.bio|default:"작성되지 않음" }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">가입일</td>
+            <td style="padding: 10px;">{{ user.date_joined|date:"Y-m-d H:i" }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; font-weight: 600;">마지막 접속</td>
+            <td style="padding: 10px;">{{ user.last_login|date:"Y-m-d H:i" }}</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 권한 및 상태 관리 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">권한 및 상태</h2>
+    <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 10px;">
+            <strong>권한:</strong>
+            {% if user.is_staff %}
+                <span class="badge badge-info">관리자</span>
+            {% else %}
+                <span class="badge badge-success">일반 사용자</span>
+            {% endif %}
+        </div>
+        <div style="margin-bottom: 10px;">
+            <strong>상태:</strong>
+            {% if user.is_active %}
+                <span class="badge badge-success">활성</span>
+            {% else %}
+                <span class="badge badge-danger">비활성</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% csrf_token %}
+        <button type="submit" name="action" value="toggle_staff" class="btn {% if user.is_staff %}btn-danger{% else %}btn-primary{% endif %}" style="padding: 8px 16px;">
+            {% if user.is_staff %}관리자 권한 제거{% else %}관리자 권한 부여{% endif %}
+        </button>
+        <button type="submit" name="action" value="toggle_active" class="btn {% if user.is_active %}btn-danger{% else %}btn-primary{% endif %}" style="padding: 8px 16px;">
+            {% if user.is_active %}계정 비활성화{% else %}계정 활성화{% endif %}
+        </button>
+    </form>
+</div>
+
+<!-- 활동 통계 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">활동 통계</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+        <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #0066cc;">{{ user_stats.posts }}</div>
+            <div style="color: #6c757d; font-size: 14px;">게시글</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #0066cc;">{{ user_stats.comments }}</div>
+            <div style="color: #6c757d; font-size: 14px;">댓글</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #0066cc;">{{ user_stats.poll_votes }}</div>
+            <div style="color: #6c757d; font-size: 14px;">투표</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #0066cc;">{{ user_stats.survey_responses }}</div>
+            <div style="color: #6c757d; font-size: 14px;">설문 응답</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #0066cc;">{{ user_stats.likes }}</div>
+            <div style="color: #6c757d; font-size: 14px;">좋아요</div>
+        </div>
+    </div>
+</div>
+
+<!-- 위험 영역 -->
+<div style="background: #fff5f5; border: 1px solid #f5c6cb; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">위험 영역</h2>
+    <p style="color: #721c24; margin: 10px 0;">이 작업은 취소할 수 없습니다.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="action" value="soft_delete" class="btn btn-danger" style="padding: 8px 16px;" onclick="return confirm('정말로 이 회원을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.');">
+            회원 삭제
+        </button>
+    </form>
+</div>
+{% endblock %}

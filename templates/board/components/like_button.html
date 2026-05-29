@@ -1,0 +1,16 @@
+<!-- 좋아요 버튼 (HTMX용) -->
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'board:like_toggle' post.pk %}" class="inline">
+        {% csrf_token %}
+        <button type="submit"
+                class="inline-flex items-center gap-2 rounded-lg {% if is_liked %}bg-red-100 text-red-600 hover:bg-red-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 font-medium transition-colors">
+            {% if is_liked %}❤️{% else %}🤍{% endif %} 좋아요 ({{ like_count }})
+        </button>
+    </form>
+{% else %}
+    <p class="text-sm text-gray-500">
+        <a href="{% url 'accounts:login' %}" class="font-medium text-indigo-600 hover:text-indigo-700">
+            로그인
+        </a>하면 좋아요를 누를 수 있습니다.
+    </p>
+{% endif %}

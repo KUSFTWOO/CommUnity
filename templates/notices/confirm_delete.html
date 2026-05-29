@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}공지 삭제 확인 - CommUnity{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <div class="bg-white rounded-lg border border-red-200 p-8 text-center space-y-4">
+        <div class="text-5xl">🗑️</div>
+        <h1 class="text-xl font-bold text-gray-900">공지를 삭제하시겠습니까?</h1>
+        <p class="text-gray-500 text-sm">
+            <span class="font-medium text-gray-700">{{ notice.title }}</span> 공지가 영구적으로 삭제됩니다.<br>
+            이 작업은 되돌릴 수 없습니다.
+        </p>
+        <form method="post" class="flex gap-3 justify-center pt-2">
+            {% csrf_token %}
+            <button type="submit"
+                    class="bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                삭제
+            </button>
+            <a href="{% url 'notices:detail' notice.pk %}"
+               class="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                취소
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

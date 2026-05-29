@@ -1,0 +1,94 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>회원 관리</h1>
+</div>
+
+<!-- 검색 폼 -->
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="닉네임이나 이메일로 검색..." value="{{ search_query }}">
+    <button type="submit">검색</button>
+</form>
+
+<!-- 정렬 옵션 -->
+<div style="margin-bottom: 20px;">
+    <label>정렬:</label>
+    <select name="sort" onchange="location.href='?sort=' + this.value + '{% if search_query %}&search={{ search_query }}{% endif %}'">
+        <option value="-date_joined" {% if sort_by == '-date_joined' %}selected{% endif %}>최근 가입순</option>
+        <option value="date_joined" {% if sort_by == 'date_joined' %}selected{% endif %}>오래된 순</option>
+        <option value="nickname" {% if sort_by == 'nickname' %}selected{% endif %}>닉네임순</option>
+    </select>
+</div>
+
+<!-- 회원 목록 -->
+<div class="table-wrapper">
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>닉네임</th>
+                <th>이메일</th>
+                <th>가입일</th>
+                <th>게시글</th>
+                <th>댓글</th>
+                <th>권한</th>
+                <th>상태</th>
+                <th style="width: 100px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><a href="{% url 'dashboard:user_detail' user.id %}">{{ user.nickname }}</a></td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                <td>{{ user.posts.count }}</td>
+                <td>{{ user.comments.count }}</td>
+                <td>
+                    {% if user.is_staff %}
+                        <span class="badge badge-info">관리자</span>
+                    {% else %}
+                        <span class="badge badge-success">일반</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_active %}
+                        <span class="badge badge-success">활성</span>
+                    {% else %}
+                        <span class="badge badge-danger">비활성</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'dashboard:user_detail' user.id %}" class="btn btn-sm" style="padding: 4px 8px; font-size: 12px; background: #0066cc; color: white; text-decoration: none; border-radius: 3px;">상세</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; color: #6c757d; padding: 30px;">회원이 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 페이징 -->
+{% if users.has_other_pages %}
+<div class="pagination">
+    {% if users.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">처음</a>
+        <a href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">이전</a>
+    {% endif %}
+
+    {% for num in users.paginator.page_range %}
+        {% if users.number == num %}
+            <span class="current">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if users.has_next %}
+        <a href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">다음</a>
+        <a href="?page={{ users.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">마지막</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

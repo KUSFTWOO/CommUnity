@@ -1,0 +1,45 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>설문조사 관리</h1>
+</div>
+
+<!-- 설문 목록 -->
+<div class="table-wrapper">
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">제목</th>
+                <th style="width: 15%;">작성자</th>
+                <th style="width: 15%;">마감일</th>
+                <th style="width: 10%;">응답수</th>
+                <th style="width: 10%;">상태</th>
+                <th style="width: 100px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for survey in surveys %}
+            <tr>
+                <td><a href="{% url 'dashboard:survey_detail' survey.id %}">{{ survey.title }}</a></td>
+                <td>{{ survey.created_by.nickname }}</td>
+                <td>{{ survey.expires_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ survey.total_responses }}</td>
+                <td>
+                    {% if survey.is_expired %}
+                        <span class="badge badge-danger">마감</span>
+                    {% else %}
+                        <span class="badge badge-success">진행중</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'dashboard:survey_detail' survey.id %}" class="btn btn-sm" style="padding: 4px 8px; font-size: 12px; background: #0066cc; color: white; text-decoration: none; border-radius: 3px;">상세</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #6c757d; padding: 30px;">설문이 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

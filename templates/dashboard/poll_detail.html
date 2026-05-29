@@ -1,0 +1,78 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>투표 상세</h1>
+    <a href="{% url 'dashboard:polls' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 투표 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">{{ poll.question }}</h2>
+    <div style="color: #6c757d; margin-bottom: 20px;">
+        <span>작성자: {{ poll.created_by.nickname }}</span> |
+        <span>작성일: {{ poll.created_at|date:"Y-m-d H:i" }}</span> |
+        <span>마감일: {{ poll.expires_at|date:"Y-m-d H:i" }}</span>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        {% if poll.is_expired %}
+            <span class="badge badge-danger">마감됨</span>
+        {% else %}
+            <span class="badge badge-success">진행중</span>
+        {% endif %}
+    </div>
+
+    <!-- 투표 옵션 및 결과 -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+        <h3 style="margin-top: 0;">투표 결과</h3>
+        <div style="margin-bottom: 10px; color: #6c757d;">
+            총 투표수: <strong>{{ poll.total_votes }}</strong>
+        </div>
+
+        {% for option in options %}
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>{{ option.text }}</span>
+                <span style="font-weight: 600;">{{ option.votes_count }} ({{ option.percentage }}%)</span>
+            </div>
+            <div style="background: white; border-radius: 3px; height: 25px; overflow: hidden; border: 1px solid #dee2e6;">
+                <div style="background: #0066cc; height: 100%; width: {{ option.percentage }}%; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 12px; font-weight: 500; min-width: 40px;">
+                    {% if option.percentage > 0 %}{{ option.percentage }}%{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 상세 투표 현황 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0;">투표 참여자</h2>
+
+    {% if poll.votes.all %}
+        <div class="table-wrapper">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">참여자</th>
+                        <th style="width: 30%;">선택</th>
+                        <th style="width: 40%;">투표일시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in poll.votes.all %}
+                    <tr>
+                        <td>{{ vote.user.nickname }}</td>
+                        <td>{{ vote.option.text }}</td>
+                        <td>{{ vote.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: #6c757d; text-align: center; padding: 30px 0;">투표 참여자가 없습니다.</p>
+    {% endif %}
+</div>
+{% endblock %}

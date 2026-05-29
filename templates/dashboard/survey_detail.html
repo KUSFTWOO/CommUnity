@@ -1,0 +1,78 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>설문조사 상세</h1>
+    <a href="{% url 'dashboard:surveys' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 설문 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">{{ survey.title }}</h2>
+    <div style="color: #6c757d; margin-bottom: 15px;">
+        <span>작성자: {{ survey.created_by.nickname }}</span> |
+        <span>작성일: {{ survey.created_at|date:"Y-m-d H:i" }}</span> |
+        <span>마감일: {{ survey.expires_at|date:"Y-m-d H:i" }}</span>
+    </div>
+
+    {% if survey.description %}
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; white-space: pre-wrap; line-height: 1.6;">
+{{ survey.description }}
+    </div>
+    {% endif %}
+
+    <div>
+        {% if survey.is_expired %}
+            <span class="badge badge-danger">마감됨</span>
+        {% else %}
+            <span class="badge badge-success">진행중</span>
+        {% endif %}
+
+        {% if survey.is_anonymous %}
+            <span class="badge badge-info">익명</span>
+        {% else %}
+            <span class="badge badge-info">실명</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 설문 문항 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0;">설문 문항 ({{ questions.count }}개)</h2>
+
+    {% if questions %}
+        {% for question in questions %}
+        <div style="background: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+            <div style="font-weight: 600; margin-bottom: 10px;">
+                {{ forloop.counter }}. {{ question.text }}
+                {% if question.required %}
+                    <span style="color: #dc3545;">*</span>
+                {% endif %}
+            </div>
+            <div style="color: #6c757d; font-size: 13px; margin-bottom: 10px;">
+                유형: <strong>{{ question.get_question_type_display }}</strong>
+                <br>응답 수: <strong>{{ question.answers.count }}</strong>
+            </div>
+
+            {% if question.parsed_options %}
+            <div style="margin-left: 20px;">
+                {% for option in question.parsed_options %}
+                    <div style="padding: 5px 0;">- {{ option }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: #6c757d; text-align: center; padding: 30px 0;">문항이 없습니다.</p>
+    {% endif %}
+</div>
+
+<!-- 응답 현황 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-top: 30px;">
+    <h2 style="margin-top: 0;">응답 현황</h2>
+    <div style="color: #6c757d; margin-bottom: 20px;">
+        총 응답자: <strong>{{ survey.total_responses }}</strong>명
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+<!-- 댓글 목록 (HTMX용) -->
+<div class="space-y-6">
+    {% for comment in root_comments %}
+        {% include "board/components/comment.html" with comment=comment post=post user=user %}
+    {% empty %}
+        <div class="text-center py-8 text-gray-500">
+            <p>아직 댓글이 없어요. 첫 댓글을 작성해보세요!</p>
+        </div>
+    {% endfor %}
+</div>

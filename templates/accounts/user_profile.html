@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.nickname }} 프로필 — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'home' %}"
+       class="mb-6 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 홈으로
+    </a>
+
+    <!-- 프로필 카드 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 mb-8">
+        <div class="flex items-start justify-between">
+            <div class="flex items-start gap-6">
+                <!-- 아바타 -->
+                <div class="flex-shrink-0">
+                    {% if profile_user.profile_image %}
+                        <img src="{{ profile_user.profile_image.url }}"
+                             alt="{{ profile_user.nickname }}"
+                             class="h-24 w-24 rounded-full object-cover border-4 border-indigo-100">
+                    {% else %}
+                        <div class="h-24 w-24 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
+                            <span class="text-4xl font-bold text-white">{{ profile_user.nickname|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 프로필 정보 -->
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold text-gray-900">{{ profile_user.nickname }}</h1>
+                    {% if profile_user.bio %}
+                        <p class="mt-2 text-gray-600">{{ profile_user.bio }}</p>
+                    {% endif %}
+                    <div class="mt-4 space-y-2 text-sm text-gray-600">
+                        <div class="flex items-center gap-6">
+                            <span>📧 {{ profile_user.email }}</span>
+                            <span>📅 가입: {{ profile_user.date_joined|date:"Y년 m월 d일" }}</span>
+                        </div>
+                        <!-- 통계 정보 -->
+                        <div class="flex items-center gap-6 pt-2 border-t border-gray-200">
+                            <span class="font-medium">📝 {{ post_count }}개 게시글</span>
+                            <span class="font-medium">👁️ {{ total_views }}회 조회</span>
+                            <span class="font-medium">💬 {{ total_comments }}개 댓글</span>
+                            <span class="font-medium">❤️ {{ total_likes }}명 좋아요</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 프로필 수정 버튼 (본인인 경우) -->
+            {% if is_own_profile %}
+                <a href="{% url 'accounts:profile_edit' %}"
+                   class="rounded-lg bg-indigo-600 px-6 py-2 font-medium text-white transition-colors hover:bg-indigo-700">
+                    ✏️ 프로필 수정
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 게시글 섹션 -->
+    <div>
+        <h2 class="mb-4 text-2xl font-bold text-gray-900">
+            {% if is_own_profile %}
+                내 게시글 ({{ post_count }})
+            {% else %}
+                {{ profile_user.nickname }}님의 게시글 ({{ post_count }})
+            {% endif %}
+        </h2>
+
+        {% if user_posts %}
+            <div class="space-y-4">
+                {% for post in user_posts %}
+                    <a href="{% url 'board:detail' post.pk %}"
+                       class="block rounded-lg border border-gray-200 bg-white p-6 hover:shadow-lg transition-shadow hover:border-indigo-300">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-gray-900 hover:text-indigo-600">
+                                    {{ post.title }}
+                                </h3>
+                            </div>
+                            <span class="text-xs text-gray-500 flex-shrink-0 ml-4">{{ post.created_at|date:"Y-m-d" }}</span>
+                        </div>
+
+                        <!-- 게시글 요약 -->
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {{ post.content|truncatewords:20 }}
+                        </p>
+
+                        <!-- 메타 정보 -->
+                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                            <span>👁️ {{ post.view_count }}회</span>
+                            <span>💬 댓글 {{ post.comments.count }}개</span>
+                            {% if post.likes.count > 0 %}
+                                <span>❤️ {{ post.likes.count }}명</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- 게시글 없음 -->
+            <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 py-12 text-center">
+                <p class="text-lg text-gray-500">아직 게시한 글이 없습니다.</p>
+                {% if is_own_profile %}
+                    <a href="{% url 'board:create' %}"
+                       class="mt-4 inline-block rounded-lg bg-indigo-600 px-6 py-2 font-medium text-white transition-colors hover:bg-indigo-700">
+                        첫 게시글 쓰기
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>공지사항 관리</h1>
+    <a href="{% url 'dashboard:notices' %}" style="color: #0066cc; text-decoration: none;">← 돌아가기</a>
+</div>
+
+<!-- 공지사항 정보 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">{{ notice.title }}</h2>
+    <div style="color: #6c757d; margin-bottom: 15px;">
+        <span>작성자: {{ notice.author.nickname }}</span> |
+        <span>작성일: {{ notice.created_at|date:"Y-m-d H:i" }}</span> |
+        <span>수정일: {{ notice.updated_at|date:"Y-m-d H:i" }}</span>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; white-space: pre-wrap; line-height: 1.6;">
+{{ notice.content }}
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" name="action" value="toggle_important" class="btn {% if notice.is_important %}btn-danger{% else %}btn-primary{% endif %}" style="padding: 8px 16px;">
+                {% if notice.is_important %}상단 고정 해제{% else %}상단에 고정{% endif %}
+            </button>
+        </form>
+
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" name="action" value="delete" class="btn btn-danger" style="padding: 8px 16px;" onclick="return confirm('정말로 이 공지사항을 삭제하시겠습니까?');">
+                삭제
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 편집 폼 -->
+<div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+    <h2 style="margin-top: 0;">공지사항 수정</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">제목</label>
+            <input type="text" name="title" value="{{ notice.title }}" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 5px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">내용</label>
+            <textarea name="content" style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 5px; min-height: 200px;">{{ notice.content }}</textarea>
+        </div>
+        <button type="submit" name="action" value="edit" class="btn btn-primary" style="padding: 8px 16px;">
+            수정 완료
+        </button>
+    </form>
+</div>
+{% endblock %}

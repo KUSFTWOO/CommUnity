@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>공지사항 관리</h1>
+</div>
+
+<!-- 공지사항 목록 -->
+<div class="table-wrapper">
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">제목</th>
+                <th style="width: 15%;">작성자</th>
+                <th style="width: 15%;">작성일</th>
+                <th style="width: 10%;">상태</th>
+                <th style="width: 100px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notice in notices %}
+            <tr>
+                <td>
+                    <a href="{% url 'dashboard:notice_manage' notice.id %}">
+                        {% if notice.is_important %}
+                            <span style="color: #dc3545; font-weight: 600;">★</span>
+                        {% endif %}
+                        {{ notice.title }}
+                    </a>
+                </td>
+                <td>{{ notice.author.nickname }}</td>
+                <td>{{ notice.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if notice.is_important %}
+                        <span class="badge badge-danger">상단 고정</span>
+                    {% else %}
+                        <span class="badge badge-info">일반</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'dashboard:notice_manage' notice.id %}" class="btn btn-sm" style="padding: 4px 8px; font-size: 12px; background: #0066cc; color: white; text-decoration: none; border-radius: 3px;">관리</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #6c757d; padding: 30px;">공지사항이 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

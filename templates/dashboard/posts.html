@@ -1,0 +1,78 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <h1>게시글 관리</h1>
+</div>
+
+<!-- 검색 폼 -->
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="제목이나 내용으로 검색..." value="{{ search_query }}">
+    <button type="submit">검색</button>
+</form>
+
+<!-- 정렬 옵션 -->
+<div style="margin-bottom: 20px;">
+    <label>정렬:</label>
+    <select name="sort" onchange="location.href='?sort=' + this.value + '{% if search_query %}&search={{ search_query }}{% endif %}'">
+        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>최신순</option>
+        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>오래된 순</option>
+        <option value="-views" {% if sort_by == '-views' %}selected{% endif %}>조회수 높은 순</option>
+    </select>
+</div>
+
+<!-- 게시글 목록 -->
+<div class="table-wrapper">
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">제목</th>
+                <th style="width: 15%;">작성자</th>
+                <th style="width: 12%;">작성일</th>
+                <th style="width: 10%;">조회수</th>
+                <th style="width: 10%;">댓글</th>
+                <th style="width: 100px;">관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td><a href="{% url 'dashboard:post_manage' post.id %}">{{ post.title }}</a></td>
+                <td>{{ post.author.nickname }}</td>
+                <td>{{ post.created_at|date:"Y-m-d" }}</td>
+                <td>{{ post.views }}</td>
+                <td>{{ post.comment_count }}</td>
+                <td><a href="{% url 'dashboard:post_manage' post.id %}" class="btn btn-sm" style="padding: 4px 8px; font-size: 12px; background: #0066cc; color: white; text-decoration: none; border-radius: 3px;">상세</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #6c757d; padding: 30px;">게시글이 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 페이징 -->
+{% if posts.has_other_pages %}
+<div class="pagination">
+    {% if posts.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">처음</a>
+        <a href="?page={{ posts.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">이전</a>
+    {% endif %}
+
+    {% for num in posts.paginator.page_range %}
+        {% if posts.number == num %}
+            <span class="current">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if posts.has_next %}
+        <a href="?page={{ posts.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">다음</a>
+        <a href="?page={{ posts.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">마지막</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

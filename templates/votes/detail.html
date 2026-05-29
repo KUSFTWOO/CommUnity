@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poll.question }} — CommUnity{% endblock %}
+
+{% block content %}
+<div>
+    <!-- 뒤로가기 -->
+    <a href="{% url 'votes:list' %}"
+       class="mb-4 inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+        ← 투표 목록으로
+    </a>
+
+    <!-- 투표 카드 -->
+    <div class="rounded-xl border border-gray-200 bg-white p-8 mb-8">
+        <div class="flex items-start justify-between mb-6">
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-gray-900">{{ poll.question }}</h1>
+                <div class="mt-2 flex items-center gap-4 text-sm text-gray-600">
+                    <span>작성자: {{ poll.created_by.nickname }}</span>
+                    <span>{{ poll.created_at|date:"Y-m-d H:i" }}</span>
+                    {% if is_expired %}
+                        <span class="inline-block rounded-full bg-red-100 px-2 py-1 text-red-700">마감됨</span>
+                    {% else %}
+                        <span class="inline-block rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">진행중</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if user.is_authenticated and user.is_staff %}
+                <div class="flex gap-2">
+                    <a href="{% url 'votes:edit' poll.pk %}"
+                       class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+                        수정
+                    </a>
+                    <a href="{% url 'votes:delete' poll.pk %}"
+                       class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50">
+                        삭제
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 투표 상태 메시지 -->
+        {% if is_expired %}
+            <div class="mb-6 rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm text-gray-600">
+                이 투표는 마감되었습니다. 결과만 확인할 수 있습니다.
+            </div>
+        {% elif not user.is_authenticated %}
+            <div class="mb-6 rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-700">
+                <a href="{% url 'accounts:login' %}" class="font-medium underline hover:no-underline">
+                    로그인
+                </a>하면 투표에 참여할 수 있습니다.
+            </div>
+        {% elif user_vote %}
+            <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-700">
+                ✓ 이미 투표하셨습니다. 선택한 항목: <strong>{{ user_vote.option.text }}</strong>
+            </div>
+        {% endif %}
+
+        <!-- 선택지 및 결과 -->
+        {% if is_expired or user_vote %}
+            <!-- 결과 표시 -->
+            <div class="space-y-4">
+                {% for option in poll.options.all %}
+                    <div class="{% if user_vote.option.id == option.id %}bg-indigo-50{% else %}bg-gray-50{% endif %} rounded-lg p-4 border {% if user_vote.option.id == option.id %}border-indigo-200{% else %}border-gray-200{% endif %}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-900">{{ option.text }}</span>
+                                {% if user_vote.option.id == option.id %}
+                                    <span class="text-xs bg-indigo-100 text-indigo-700 rounded px-2 py-0.5">내 선택</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-gray-900">{{ option.votes_count }}</div>
+                                <div class="text-sm text-gray-600">{{ option.percentage }}%</div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-indigo-600 h-full transition-all duration-300" style="width: {{ option.percentage }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- 투표 옵션 -->
+            <form method="post" id="poll-form" class="space-y-4">
+                {% csrf_token %}
+                {% for option in poll.options.all %}
+                    <label class="block rounded-lg border border-gray-200 bg-white p-4 cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-500">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="option_id" value="{{ option.id }}" class="w-4 h-4 text-indigo-600 cursor-pointer" required>
+                            <span class="font-medium text-gray-900 flex-1">{{ option.text }}</span>
+                        </div>
+                    </label>
+                {% endfor %}
+            </form>
+        {% endif %}
+
+        <!-- 투표 버튼 -->
+        {% if not is_expired and user.is_authenticated and not user_vote %}
+            <div class="mt-6 flex gap-2">
+                <button type="submit" form="poll-form" class="flex-1 rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    투표하기
+                </button>
+                <a href="{% url 'votes:list' %}"
+                   class="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-medium text-gray-700 text-center transition-colors hover:bg-gray-50">
+                    취소
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- 투표 통계 -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <div class="text-sm text-gray-600">
+                <span class="font-medium text-gray-900">총 {{ total_votes }}명</span>이 투표했습니다.
+                {% if is_expired %}
+                    <span class="ml-2">{{ poll.expires_at|date:"m월 d일 H:i" }}에 마감되었습니다.</span>
+                {% else %}
+                    <span class="ml-2">{{ poll.expires_at|date:"m월 d일 H:i" }}에 마감됩니다.</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
