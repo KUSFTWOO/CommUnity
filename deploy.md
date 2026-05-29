@@ -1,18 +1,15 @@
-[운영 환경용패키지설치]
-작업을시작하기전에@docs/START.md을 읽자. 이전에구현한작업들을메모리에기억시키고업무를시작하자. 분석이완벽하게끝나면아래작업을시작해.
-현재프로젝트의가상환경에Render 배포에필요한Python 패키지들을설치해줘. 설치할패키지는gunicorn, psycopg2-binary, dj-database-url, whitenoise 야. 아래의 작업을 순서대로 진행해 줘.
-requirements.txt 업데이트
-패키지설치가완료되면설치한패키지들을포함해서, 현재가상환경의모든패키지목록을requirements.txt 파일에갱신해줘.
-settings.py를 배포 환경에 맞게 수정
-config/settings.py 파일을 수정해서 로컬 개발 환경(SQLite)은 그대로 유지하면서, Render의 운영 환경(PostgreSQL)에서도 작동할수 있도록 유연하게 만들어 줘.
-수정조건:
-1. os와 dj_database_url을 임포트해줘.
-2. SECRET_KEY는환경 변수에서 읽어오도록수정하고, 환경변수가없을때를대비한기본값도설정해줘. (보안상실제키는나중에Render에서설정할거야)
-3. DEBUG 모드는 'RENDER' in os.environ 코드를 사용해서 Render 환경에서는 자동으로 False가 되도록 설정해 줘.
-4. ALLOWED_HOSTS는 Render의 도메인을 자동으로 허용하도록설정해줘.
-5. DATABASES 설정은DATABASE_URL 환경 변수가 있으면PostgreSQL을 사용하고, 없으면기존의db.sqlite3를 사용하도록 dj_database_url.config()를 이용해 수정해 줘.
-6. MIDDLEWARE 목록에서 'django.middleware.security.SecurityMiddleware' 바로 아래에 'whitenoise.middleware.WhiteNoiseMiddleware'를 추가해 줘.
-7. 정적 파일(STATICFILES) 관련 설정은 운영환경(if not DEBUG:)에서만 STATIC_ROOT와 Whitenoise용 STATICFILES_STORAGE를 사용하도록 추가해 줘.
-쓰기@logs/YYYYMMDD_tasks.md : 개발이 끝나면 업무 보고서를작성할것
-11
-쓰기@logs/YYYYMMDD_logs.md: 업무 일기장을 작성할 것
+이제깃허브에커밋및푸시를진행
+• 터미널을열고아래명령어를순서대로진행
+git add .
+git commit –m “Configure project for Render deployment”
+git push origin main
+1. Render 대시보드로이동하여[+New] 버튼을누르고[Blueprint]를선택
+2. GitHub 저장소목록에서community 프로젝트가설정된깃헙계정을선택하고연결
+3. 연결이완료되면아래로내려가community 리포지토리와[connect]를클릭해서연결
+4. 다음화면에서결제정보를입력. 국가, 주소, 카드정보등을입력하고아래쪽의[Add Cad] 버튼을클릭
+5. 이름을입력하고[Retry] 버튼을클릭.  비용을확인하고[Deploy Blueprint]를 클릭
+6. Render가 render.yaml 파일을 자동으로 읽어서비스이름(community-web) 과데이터베이스(communitydb)설정을화면에보여준다
+
+7. 배포가성공적으로완료되면, 고유한.onrender.com 주소가생성.‒ 이주소로접속하여웹사이트가잘작동하는지확인‒ 왼쪽메뉴에서[Resources]를클릭하면, community-web (Web Service)과 community-db(PostgreSQL) 두 항목이 보임‒ community-web을 클릭해서웹서비스의상세페이지로이동‒ 페이지상단에
+https://community-web-xxxxx.onrender.com과 같은 형태의 주소가 보임‒ 이것이바로배포된웹사이트의주소
+8. (최초1회) 배포된사이트의관리자계정을설정‒ 대시보드의웹서비스페이지에서[Shell] 탭을열고, python manage.py createsuperuser명령어를실행하여관리자계정을생성‒ 이제깃허브에푸시하면자동으로Render에배포가진행‒ 만약배포에문제가생겼다면[Render] 대시보드[Events]로이동해서에러사항을복사해서클로드코드에전달달
